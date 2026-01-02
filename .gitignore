@@ -1,7 +1,10 @@
 # Visual Studio
 .vs/
 **/.vs/
-
-# Visual Studio user-specific files
 *.csproj.user
 
+# Build output
+bin/
+obj/
+**/bin/
+**/obj/
