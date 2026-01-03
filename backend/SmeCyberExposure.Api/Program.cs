@@ -1,15 +1,33 @@
+using Microsoft.Extensions.Options;
+using SmeCyberExposure.Api.Configuration;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// Controllers
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Consistent API errors (ProblemDetails)
+builder.Services.AddProblemDetails();
+
+// Options binding + validation
+builder.Services.AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.SigningKey), "Jwt:SigningKey is required")
+    .ValidateOnStart();
+
+builder.Services.AddOptions<ShodanOptions>()
+    .Bind(builder.Configuration.GetSection(ShodanOptions.SectionName));
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Global exception handling
+app.UseExceptionHandler();
+
+// Swagger only in Development
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -18,8 +36,33 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// TODO: later we will add app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Debug: raw config view (safe: doesn’t leak the key values)
+app.MapGet("/debug/config", (IConfiguration config, IHostEnvironment env) =>
+{
+    return Results.Ok(new
+    {
+        Environment = env.EnvironmentName,
+        ScannerBaseUrl = config["Scanner:BaseUrl"],
+        HasJwtSigningKey = !string.IsNullOrWhiteSpace(config["Jwt:SigningKey"]),
+        HasShodanKey = !string.IsNullOrWhiteSpace(config["Shodan:ApiKey"])
+    });
+}).ExcludeFromDescription();
+
+// Debug: options binding proof (safe: shows length only)
+app.MapGet("/debug/options", (IOptions<JwtOptions> jwt, IOptions<ShodanOptions> shodan) =>
+{
+    return Results.Ok(new
+    {
+        JwtIssuer = jwt.Value.Issuer,
+        JwtAudience = jwt.Value.Audience,
+        JwtSigningKeyLength = jwt.Value.SigningKey?.Length ?? 0,
+        HasShodanKey = !string.IsNullOrWhiteSpace(shodan.Value.ApiKey)
+    });
+}).ExcludeFromDescription();
 
 app.Run();
