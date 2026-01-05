@@ -1,20 +1,37 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace SME.Exposure.Api.Controllers
+namespace SmeCyberExposure.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class HealthController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class HealthController : ControllerBase
+    // Public endpoint (no token required)
+    [HttpGet("public")]
+    public IActionResult Public()
     {
-        [HttpGet]
-        public IActionResult Get()
+        return Ok(new
         {
-            return Ok(new
-            {
-                status = "Healthy",
-                service = "SME Cyber Exposure API",
-                timestamp = DateTime.UtcNow
-            });
-        }
+            status = "Healthy",
+            service = "SME Cyber Exposure API",
+            access = "public",
+            timestamp = DateTime.UtcNow
+        });
+    }
+
+    // Secured endpoint (token required)
+    [Authorize]
+    [HttpGet("secure")]
+    public IActionResult Secure()
+    {
+        return Ok(new
+        {
+            status = "Healthy",
+            service = "SME Cyber Exposure API",
+            access = "authorized",
+            user = User.Identity?.Name,
+            timestamp = DateTime.UtcNow
+        });
     }
 }
