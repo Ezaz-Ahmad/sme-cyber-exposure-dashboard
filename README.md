@@ -55,6 +55,5 @@ Sensitive values are stored using environment-based configuration.
 - JWT__Key=your-secure-jwt-key
 - JWT__Issuer=SmeCyberExposure
 - JWT__Audience=SmeCyberExposureUsers
-
-Shodan__ApiKey=your-shodan-api-key
+- Shodan__ApiKey=your-shodan-api-key
 
