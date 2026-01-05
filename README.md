@@ -52,9 +52,9 @@ Sensitive values are stored using environment-based configuration.
 ---
 ### Required Environment Variables
 
-JWT__Key=your-secure-jwt-key
-JWT__Issuer=SmeCyberExposure
-JWT__Audience=SmeCyberExposureUsers
+- JWT__Key=your-secure-jwt-key
+- JWT__Issuer=SmeCyberExposure
+- JWT__Audience=SmeCyberExposureUsers
 
 Shodan__ApiKey=your-shodan-api-key
 
